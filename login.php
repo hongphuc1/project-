@@ -1,72 +1,54 @@
 <?php
-  include("./config/connection.php");
-  session_start();
-
   if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = md5($_POST['password']);
-    $sql_getName = "SELECT * FROM tbladmin WHERE admin_loginname = '$username' LIMIT 1";
-    $query_getName = mysqli_query($mysqli, $sql_getName);
-    $row_getName = mysqli_fetch_array($query_getName);
-    if ($username == '' || $password == '') {
-      $checkLogin = 'Please enter complete information!';
+    $sql_login = "SELECT * FROM tbluser WHERE 
+    user_loginname = '$username' AND user_password = '$password' AND user_enabled = 1 LIMIT 1";
+    $query_login = mysqli_query($mysqli, $sql_login);
+    $count = mysqli_num_rows($query_login);
+    $row = mysqli_fetch_array($query_login);
+    if ($count > 0) {
+      $id_cus = $row['user_id'];
+      $sql_cart = "SELECT * FROM tblcart where user_id = $id_cus";
+      $query_cart = mysqli_query($mysqli, $sql_cart);
+      $row_cart = mysqli_fetch_array($query_cart);
+      $_SESSION['user_id'] = $id_cus;
+      $_SESSION['cart_id'] = $row_cart['cart_id'];
+      header("location: ./index.php");
     } else {
-      $sql_login = mysqli_query($mysqli, "SELECT * FROM tbladmin WHERE 
-        admin_loginname = '$username' AND admin_password = '$password' LIMIT 1");
-      $count = mysqli_num_rows($sql_login);
-      if ($count > 0) {
-        $_SESSION['admin'] = $username;
-        header("location: index.php");
-      } else {
-        $checkLogin = 'Username or password is incorrect!';
-      }
+      $alert = "Incorrect login name or password!";
     }
   }
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset=utf-8>
-  <title>Login Admin</title>
-  <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.css">
-  <link rel="stylesheet" href="../assets/bootstrap/js/bootstrap.bundle.js">
-  <link rel="stylesheet" href="../assets/bootstrap/js/bootstrap.bundle.min.js">
-  <link rel="stylesheet" href="./css/style.css">
-</head>
-
-<body>
-  <div class="container">
-    <div class="row justify-content-center align-items-center">
-      <div class="col-md-6">
-        <div class="col-md-12">
-          <h2 class="text-center text-info mt-5">Login to the administrator account</h2>
-          <p class="text-center text-danger font-weight-bold">
-            <?php if (isset($checkLogin)) {
-              echo $checkLogin;
-            } else {
-              echo " ";
-            }
-            ?>
-          </p>
-          <form method="POST" action="">
-              <div class="form-group">
-                <td class="text-info">Username</td>
-                <td><input class="form-control" type="text" name="username"></td>
-              </div>
-              <div class="form-group">
-                <td class="text-info">Password</td>
-                <td> <input class="form-control" type="password" name="password"></td>
-              </div>
-              <div class="text-center"> 
-                <input type="submit" 
-                class="btn btn-success" name="login" value="Login">
-              </div>
-          </form>
+<div class="container-fluid">
+  <div class="row d-flex justify-content-center align-items-center h-100 my-5">
+    <div class="col-md-9 col-lg-6 col-xl-5">
+      <img src="./assets/images/banners/login.png"
+        class="img-fluid" alt="Sample image">
+    </div>
+    <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+      <form method="POST" action="">
+        <div class="form-outline mb-4">
+          <label class="font-weight-bold" for="username">Login name</label>
+          <input required type="text" id="username" class="form-control form-control-lg" 
+            name="username" placeholder="Enter username" />
         </div>
-      </div>
+        
+        <div class="form-outline mb-3">
+          <label class="font-weight-bold" for="password">Password</label>
+          <input required type="password" id="password" class="form-control form-control-lg"
+            name="password" placeholder="Enter password" />
+        </div>
+        <p class="text-center text-danger"><strong><?php if(isset($alert)) echo $alert?></strong></p>
+        <div class="text-center text-lg-start mt-4 pt-2">
+          <input type="submit" class="btn btn-primary btn-lg" name="login"
+            style="padding-left: 2.5rem; padding-right: 2.5rem;" value="Đăng nhập">
+            <p class="small font-weight-bold mt-2 pt-1 mb-0">"Don't have an account?
+              <a href="index.php?navigate=signup" class="text-danger">Sign up</a>
+            </p>
+        </div>
+      </form>
     </div>
   </div>
-</body>
-</html>
+</div>
